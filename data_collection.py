@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Created on Mon Jul 26 14:00:13 2021
@@ -31,6 +32,32 @@ INDICATORS = {'NY.GDP.MKTP.CD':'GDP (current US$)',
               'EG.USE.ELEC.KH.PC':'Electric power consumption (kWh per capita)'
               }
 
+def load_data(force_reload=False):
+    if (not os.path.exists(FULL_DATA_DIR)) or force_reload:
+        generate_data(force_reload=force_reload)
+    return pd.read_csv(FULL_DATA_DIR)
+
+def generate_data(force_reload=False):
+    if (not os.path.exists(COUNTRY_INDEX_DIR)) or force_reload:
+        if not os.path.exists(FOLDER_DIR):
+            os.mkdir(FOLDER_DIR)
+        #populate country list
+        country_df = build_country_df()
+        #write file
+        country_df.to_csv(COUNTRY_INDEX_DIR, index=False)
+    else:
+        country_df = pd.read_csv(COUNTRY_INDEX_DIR)
+    #generate
+    indicator_df = build_indicator_df(country_df['ID'], INDICATORS.keys())
+    full_df = pd.merge(country_df, indicator_df, on='ID')
+    full_df.to_csv(FULL_DATA_DIR, index=False)
+    print("Data successfully stored in {0}".format(FULL_DATA_DIR))
+    return
+
+#TODO: switch over storage to SQL
+#TODO: support repairing partially generated sets (missing rows)
+#TODO: support adding indicators to existing data (add more columns)
+
 def try_request(session, url, params, num_tries=5):
     #TODO possibly: support non-session requests
     r = session.get(url, params=params)
@@ -50,28 +77,6 @@ def try_request(session, url, params, num_tries=5):
         i += 1
     print("Failed after {0} Attempts!".format(i))
     return None
-
-def load_data(force_reload=False):
-    if (not os.path.exists(FULL_DATA_DIR)) or force_reload:
-        generate_data(force_reload=force_reload)
-    return pd.read_csv(FULL_DATA_DIR)
-
-def generate_data(force_reload=False):
-    if (not os.path.exists(COUNTRY_INDEX_DIR)) or force_reload:
-        #populate country list
-        country_df = build_country_df()
-        #write file
-        country_df.to_csv(COUNTRY_INDEX_DIR, index=False)
-    else:
-        country_df = pd.read_csv(COUNTRY_INDEX_DIR)
-    #generate
-    indicator_df = build_indicator_df(country_df['ID'], INDICATORS.keys())
-    full_df = pd.merge(country_df, indicator_df, on='ID')
-    full_df.to_csv(FULL_DATA_DIR, index=False)
-    print("Data successfully stored in {0}".format(FULL_DATA_DIR))
-    return
-
-#TODO: complete partially generated sets (missing rows)
 
 def build_country_df():
     session = CachedSession(CACHE, backend=CACHE_BACKEND)
@@ -120,15 +125,13 @@ def _print_age_warning(obj):
     return
 
 def extract_indicator_values(obj, warning_age = 10):
-    #store country id for later use as join key
-    #data = {'ID':obj[1][0]['country']['id']}
     data = {}
     for i in obj[1]:
         if gmtime().tm_year - int(i['date']) > warning_age:
             #data is more than warning_age years old
             _print_age_warning(i)
             #TODO possibly: keep list of aged fields for addressing
-        #data order not guaranteed, index by key
+        #data order not guaranteed by API, index by key
         data[i['indicator']['id']] = i['value']
     return data
 
