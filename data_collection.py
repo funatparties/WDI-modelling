@@ -27,7 +27,7 @@ import pandas as pd
 from time import gmtime, sleep
 
 # Delay between subsequent non-cached requests in seconds
-DELAY = 0.75
+DELAY = 2
 # Filenames and locations for data storage
 FOLDER_DIR = './data/'
 COUNTRY_INDEX_DIR = FOLDER_DIR + 'countries.csv'
@@ -166,12 +166,8 @@ def try_request(url, params=None, session=None, num_tries=5, delay=DELAY):
     """
     # Define get function as either using a session or not
     if session is None:
-        def get():
-            return requests.get(url,params=params)
-    else:
-        def get():
-            return session.get(url,params=params)
-    r = get()
+            session = requests
+    r = session.get(url, params=params)
     if r.status_code == 200:
         # Success
         return r
@@ -183,7 +179,7 @@ def try_request(url, params=None, session=None, num_tries=5, delay=DELAY):
     while i < num_tries:
         sleep(delay)
         print("Retrying...{0}".format(i))
-        r = get()
+        r = session.get(url, params=params)
         if r.status_code == 200:
             # Only print success message if first attempt was unsuccessful
             print("Success!")
@@ -212,7 +208,7 @@ def build_country_df():
                 classified by World Bank.
 
     """
-    
+    print("Building country list...")
     session = CachedSession(CACHE, backend=CACHE_BACKEND)
     params = {'format':'json',
               'per_page':500}
@@ -233,6 +229,7 @@ def build_country_df():
             params['page'] = i
             r = try_request(url, params=params, session=session)
             data.extend(list_country_info(r.json()))
+    print("Country list built with {0} rows.".format(len(data)))
     return pd.DataFrame(data)
             
 def list_country_info(obj):
@@ -359,7 +356,7 @@ def build_indicator_df(country_ids, indicator_ids):
         a specific indicator for a specific country.
 
     """
-    
+    print("Collecting indicator data. This may take several minutes...")
     session = CachedSession(CACHE, backend=CACHE_BACKEND)
     params = {'format':'json',
               'per_page':60, # Maximum of 60 indicators allowed per request
@@ -388,4 +385,6 @@ def build_indicator_df(country_ids, indicator_ids):
         if not getattr(r, 'from_cache', False):
             # Only wait if response was not from cache
             sleep(DELAY)
+    print("Indicator data collected with {0} rows.\n {1} rows missing data!".format(len(data), len(country_ids)-len(data)))
     return pd.DataFrame(data)
+
