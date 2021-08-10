@@ -27,7 +27,7 @@ import pandas as pd
 from time import gmtime, sleep
 
 # Delay between subsequent non-cached requests in seconds
-DELAY = 2
+DELAY = .75
 # Filenames and locations for data storage
 FOLDER_DIR = './data/'
 COUNTRY_INDEX_DIR = FOLDER_DIR + 'countries.csv'
@@ -364,7 +364,7 @@ def build_indicator_df(country_ids, indicator_ids):
               'source':2} # Use values from World Development Indicators table
     indicator_str = ';'.join(indicator_ids)
     url = 'http://api.worldbank.org/v2/country/{0}/indicator/'+indicator_str
-    
+    #TODO: rewrite to use country/all
     data = []
     for i in country_ids:
         # Request indicator data on country
