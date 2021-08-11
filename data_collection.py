@@ -17,7 +17,7 @@ Each indicator has a code such as 'NY.GDP.MKTP.CD' which is shown by the urls
 in the indicator list and are used by the API. Thus these codes are needed when
 specifying which data to collect. The data is also stored using the codes as
 column headers for ease of manipulation and only converted into the descriptive
-labels when loaded by analysis.py.
+labels when loaded.
 """
 
 import requests
@@ -41,13 +41,13 @@ CACHE_BACKEND = 'sqlite'
 # The API indicator codes must always be used as keys; values can be any
 # descriptive names.
 INDICATORS = {'NY.GDP.MKTP.CD':'GDP (current US\$)',
-              'NY.GDP.MKTP.KD.ZG':'GDP growth (annual \%)',
+              'NY.GDP.MKTP.KD.ZG':'GDP growth (annual %)',
               'NY.GDP.PCAP.CD':'GDP per capita (current US\$)',
-              'NY.GDP.PCAP.KD.ZG':'GDP per capita growth (annual \%)',
+              'NY.GDP.PCAP.KD.ZG':'GDP per capita growth (annual %)',
               'SP.POP.TOTL':'Population, total',
-              'SP.POP.GROW':'Population growth (annual \%)',
-              'SP.URB.TOTL.IN.ZS':'Urban population (\% of total population)',
-              'FP.CPI.TOTL.ZG':'Inflation, consumer prices (annual \%)',
+              'SP.POP.GROW':'Population growth (annual %)',
+              'SP.URB.TOTL.IN.ZS':'Urban population (% of total population)',
+              'FP.CPI.TOTL.ZG':'Inflation, consumer prices (annual %)',
               'EG.USE.ELEC.KH.PC':'Electric power consumption (kWh per capita)'
               }
 

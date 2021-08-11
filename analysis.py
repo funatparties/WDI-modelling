@@ -78,7 +78,7 @@ def full_ds():
     df = df.rename(columns = lambda x:get_ind_name(x))
     return df
 
-def numeric_lending_clf_ds():
+def numeric_lending_ds():
     """Returns a design matrix of numeric training data and a set of class 
     labels for predicting Lending Type of countries. Some preprocessing is 
     applied such as dropping irrelevant or non-numeric columns, and applying 
@@ -611,11 +611,11 @@ def plot_clf_contours(ax, model, X, y, cmap=plt.cm.coolwarm,
     # Translate into numeric codes
     Z = np.vectorize(codes.get)(Z)
     Z = Z.reshape(xx.shape)
-    # Plot contours
-    ax.contourf(xx, yy, Z, cmap=cmap, alpha=0.8)
-    # Normalisation needed for applying colour map to training data to ensure
-    # point colours match contour colours for each class.
+    # Normalisation needed for to ensure point colours match contour colours 
+    # for each class.
     norm = plt.Normalize(vmin=min(codes.values()), vmax=max(codes.values()))
+    # Plot contours
+    ax.contourf(xx, yy, Z, cmap=cmap, alpha=0.8, norm=norm)
     # Plot training data
     for cat in y.cat.categories:
         ax.scatter(X[y == cat,0],X[y == cat,1],label=cat,
